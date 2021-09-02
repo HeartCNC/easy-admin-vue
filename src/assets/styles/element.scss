@@ -1,0 +1,100 @@
+.el-pagination {
+  padding: 0;
+}
+
+[class^="el-button"],
+.el-input__inner,
+.el-picker-panel,
+.el-dropdown-menu,
+.el-select-dropdown,
+.el-pagination button,
+.el-pager li {
+  border-radius: 0 !important;
+}
+
+.el-table {
+  position: relative;
+  z-index: 1;
+}
+
+.el-table thead {
+  color: #333;
+}
+
+$--color-border: $--color-white-light-4;
+
+.el-table--border,
+.el-table--group {
+  border-color: $--color-border !important;
+  thead,
+  th,
+  tr,
+  td {
+    border-color: $--color-border !important;
+  }
+}
+.el-table::before,
+.el-table--group::after,
+.el-table--border::after {
+  background-color: $--color-border;
+}
+
+.el-table__empty-text {
+  color: #333;
+}
+
+[class^="el-button"],
+.el-select-dropdown,
+.el-table__empty-text,
+.el-pagination {
+  user-select: none;
+}
+
+.el-select-dropdown__item.selected {
+  font-weight: 400 !important;
+}
+
+.el-select-dropdown__item {
+  text-align: center;
+}
+
+.el-pagination--small {
+  .el-select--mini {
+    .el-input--mini .el-input__inner {
+      height: 22px;
+    }
+  }
+  .el-input__suffix {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.el-table-column--selection .cell {
+  padding-right: 10px;
+}
+
+.el-table .el-loading-mask {
+  right: 1px;
+  bottom: 1px;
+}
+
+// form
+
+.el-form-item--mini.el-form-item {
+  margin-bottom: 0;
+}
+
+.el-form {
+  &:not([class$="--inline"]) {
+    .el-form-item {
+      &:nth-child(n+2) {
+        margin-top: $--size-space;
+      }
+    }
+  }
+}
+
+.el-textarea__inner {
+  min-height: 100% !important;
+}

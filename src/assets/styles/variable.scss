@@ -1,0 +1,52 @@
+$--color-white: #fff;
+$--color-black: #000;
+
+$--color-white-light-1: mix($--color-black, $--color-white, 10%);
+$--color-white-light-2: mix($--color-black, $--color-white, 20%);
+$--color-white-light-3: mix($--color-black, $--color-white, 30%);
+$--color-white-light-4: mix($--color-black, $--color-white, 40%);
+$--color-white-light-5: mix($--color-black, $--color-white, 50%);
+$--color-white-light-6: mix($--color-black, $--color-white, 60%);
+$--color-white-light-7: mix($--color-black, $--color-white, 70%);
+$--color-white-light-8: mix($--color-black, $--color-white, 80%);
+$--color-white-light-9: mix($--color-black, $--color-white, 90%);
+
+$--color-primary: #787cf1;
+$--color-primary-light-1: mix($--color-white, $--color-primary, 10%);
+$--color-primary-light-2: mix($--color-white, $--color-primary, 20%);
+$--color-primary-light-3: mix($--color-white, $--color-primary, 30%);
+$--color-primary-light-4: mix($--color-white, $--color-primary, 40%);
+$--color-primary-light-5: mix($--color-white, $--color-primary, 50%);
+$--color-primary-light-6: mix($--color-white, $--color-primary, 60%);
+$--color-primary-light-7: mix($--color-white, $--color-primary, 70%);
+$--color-primary-light-8: mix($--color-white, $--color-primary, 80%);
+$--color-primary-light-9: mix($--color-white, $--color-primary, 90%);
+
+$--color-success: #02b340;
+$--color-warning: #e6a23c;
+$--color-danger: #f52443;
+// $--color-info: #909399;
+
+$--color-input-border: #DCDFE6;
+
+@mixin gradient-primary {
+  background-image: linear-gradient(-45deg, $--color-primary-light-2, $--color-primary-light-7);
+}
+
+$--button-font-weight: 400;
+$--font-path: '~element-ui/lib/theme-chalk/fonts';
+
+$--size-space-divided-2: 6px;
+$--size-space: 12px;
+$--size-space-multiply-2: 24px;
+
+$--width-sidebar: 220px;
+$--height-navbar: 50px;
+
+@mixin shadow-primary {
+  
+}
+
+@mixin shadow-gray($x, $y) {
+  box-shadow: $x $y 4px 0 $--color-white-light-1;
+}
