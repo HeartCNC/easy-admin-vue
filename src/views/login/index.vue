@@ -2,44 +2,48 @@
   <div class="login-container">
     <div class="blur-bg" />
     <el-form ref="loginForm"
-             size="small"
+             size="medium"
              :model="loginForm"
              :rules="loginRules"
              class="login-form"
-             autocomplete="off"
              label-position="left">
       <div class="title-container">
-        <h3 class="title">欢迎您</h3>
+        <h3 class="title">后台管理</h3>
       </div>
-
       <el-form-item prop="username">
         <el-input ref="username"
                   v-model="loginForm.username"
                   prefix-icon="el-icon-user"
-                  placeholder="Username"
+                  placeholder="请输入用户名"
                   name="username"
-                  type="text"
-                  tabindex="1"
-                  autocomplete="on" />
+                  type="text" />
       </el-form-item>
-
       <el-form-item prop="password">
-        <el-input :key="passwordType"
+        <el-input key="password"
                   ref="password"
                   v-model="loginForm.password"
                   prefix-icon="el-icon-lock"
-                  :type="passwordType"
-                  placeholder="Password"
-                  name="password"
-                  tabindex="2"
-                  autocomplete="on"
-                  @keyup.native="checkCapslock"
-                  @blur="capsTooltip = false"
-                  @keyup.enter.native="handleLogin" />
+                  type="password"
+                  placeholder="请输入密码"
+                  name="password" />
       </el-form-item>
-
+      <el-form-item prop="captcha"
+                    class="form-code">
+        <el-input ref="captcha"
+                  v-model="loginForm.captchaCode"
+                  prefix-icon="el-icon-paperclip"
+                  placeholder="请输入验证码"
+                  maxlength="6"
+                  type="text"
+                  @keyup.enter.native="handleLogin" />
+        <img :src="captchaImg"
+             class="code"
+             alt=""
+             title="更换验证码"
+             @click="tapCaptcha">
+      </el-form-item>
       <el-button :loading="loading"
-                 size="small"
+                 size="medium"
                  type="primary"
                  class="btn-login"
                  @click.native.prevent="handleLogin">
@@ -50,95 +54,61 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-
+import { apiCaptcha, apiSysLogin } from '@/api/index'
+import { setToken } from '@/utils/auth'
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        username: '',
+        password: '',
+        captchaTicket: '',
+        captchaCode: ''
       },
+      captchaImg: '',
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        username: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
+        password: [{ required: true, trigger: 'blur', message: '请输入密码' }],
+        captchaCode: [{ required: true, trigger: 'blur', message: '请输入验证码' }]
       },
-      passwordType: 'password',
-      capsTooltip: false,
-      loading: false,
-      redirect: undefined,
-      otherQuery: {}
+      loading: false
     }
   },
-  watch: {
-    $route: {
-      handler: function(route) {
-        const query = route.query
-        if (query) {
-          this.redirect = query.redirect
-          this.otherQuery = this.getOtherQuery(query)
-        }
-      },
-      immediate: true
+  computed: {
+    redirect() {
+      return this.$route.query.redirect && decodeURIComponent(this.$route.query.redirect)
     }
-  },
-  created() {
-    // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
-    if (this.loginForm.username === '') {
-      this.$refs.username.focus()
-    } else if (this.loginForm.password === '') {
-      this.$refs.password.focus()
-    }
-  },
-  destroyed() {
-    // window.removeEventListener('storage', this.afterQRScan)
+    this.tapCaptcha()
   },
   methods: {
-    checkCapslock(e) {
-      const { key } = e
-      this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
-    },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-              this.loading = false
-            })
-            .catch(() => {
-              this.loading = false
-            })
-        } else {
-          return false
+      this.$refs.loginForm.validate(async(valid) => {
+        if (!valid) {
+          return
         }
+        this.loading = true
+        try {
+          const data = await apiSysLogin(this.loginForm)
+          setToken(data)
+          this.$router.replace({ path: this.redirect || '/' })
+        } catch (error) {
+          this.$message.error(error.message)
+          this.tapCaptcha()
+        }
+        this.loading = false
       })
     },
-    getOtherQuery(query) {
-      return Object.keys(query).reduce((acc, cur) => {
-        if (cur !== 'redirect') {
-          acc[cur] = query[cur]
-        }
-        return acc
-      }, {})
+    async tapCaptcha() {
+      try {
+        const data = await apiCaptcha()
+        this.captchaImg = data.base64Img
+        this.loginForm.captchaTicket = data.ticket
+      } catch (error) {
+        this.$message.error(error.message)
+      }
     }
   }
 }
@@ -159,18 +129,16 @@ export default {
     right: 0;
     bottom: 0;
     left: 0;
-    @include gradient-primary;
-    filter: blur(4px);
     z-index: -1;
+    background-color: #e3e8ee;
   }
 
   .login-form {
-    padding: 60px 60px;
+    padding: 40px 60px 60px;
     width: 440px;
     position: relative;
-    border: 1px solid #fff;
-    border-radius: $--size-space;
-    background-color: $--color-white-light-2;
+    border: 1px solid #dcdfe6;
+    background-color: rgba($color: #fff, $alpha: 0.5);
     overflow: hidden;
 
     .el-input__icon {
@@ -179,6 +147,29 @@ export default {
 
     .el-input {
       display: inline-block;
+    }
+
+    .form-code {
+      position: relative;
+      padding-right: 112px;
+      .code {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 100px;
+        transform: translateX(100%) translateX(12px) translateX(1px);
+        cursor: pointer;
+        object-fit: contain;
+        object-position: center;
+        font-size: 0;
+        border: 1px solid transparent;
+        background-color: #fff;
+        border: 1px solid #dcdfe6;
+        &[src="unknown"] {
+          display: none;
+        }
+      }
     }
   }
 

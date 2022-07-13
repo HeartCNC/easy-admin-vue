@@ -1,8 +1,9 @@
 <template>
   <el-table ref="table"
             v-loading="loading"
+            class="table"
             :data="dataSource"
-            border
+            header-row-class-name="table-header"
             :default-sort="defaultSort"
             :cell-class-name="__cellClassName"
             @selection-change="__selectionChange">
@@ -129,3 +130,12 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.table {
+  box-shadow: 0 0 2px 1px rgb(30 41 59 / 6%);
+}
+.table-header th{
+  background-color: #f2f3f4 !important;
+}
+</style>

@@ -1,4 +1,5 @@
-import '@/assets/styles/index.scss'
+import '@/styles/index.scss'
+import '@/utils/logger'
 import ElementUI from 'element-ui'
 
 import Vue from 'vue'

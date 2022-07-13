@@ -1,30 +1,34 @@
-'use strict'
 const path = require('path')
+const dayjs = require('dayjs')
+const CompressionWebpackPlugin = require('compression-webpack-plugin')
+const FileManagerPlugin = require('filemanager-webpack-plugin')
+const { mode } = require('minimist')(process.argv.slice(2))
+const { name, version, author } = require('./package.json')
+const isProduction = process.env.NODE_ENV === 'production'
+const buildTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
+
+const defineEnv = {
+  BUILD_ENV: mode,
+  BUILD_TIME: buildTime,
+  BUILD_VERSION: version,
+  AUTHOR: author
+}
 
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
 module.exports = {
-  publicPath: '/',
-  outputDir: 'dist',
-  assetsDir: 'static',
-  lintOnSave: process.env.NODE_ENV === 'development',
+  publicPath: isProduction ? '' : '/',
+  lintOnSave: !isProduction,
   productionSourceMap: false,
   devServer: {
-    port: 8899,
+    port: 9100,
     overlay: {
       warnings: false,
       errors: true
     },
     before: null
-  },
-  configureWebpack: {
-    resolve: {
-      alias: {
-        '@': resolve('src')
-      }
-    }
   },
   chainWebpack(config) {
     config.plugin('preload').tap(() => [
@@ -43,10 +47,47 @@ module.exports = {
         .use('sass-resources-loader')
         .loader('sass-resources-loader')
         .options({
-          // Provide path to the file with resources
-          resources: './src/assets/styles/variable.scss'
+          resources: './src/styles/variable.scss'
         })
         .end()
+    })
+
+    config.plugin('define').tap(args => {
+      Object.keys(defineEnv).forEach(item => {
+        args[0]['process.env'][item] = JSON.stringify(defineEnv[item])
+      })
+      return args
+    })
+
+    config.plugin('html')
+      .tap(args => {
+        Object.keys(defineEnv).forEach(item => {
+          args[0][item] = defineEnv[item]
+        })
+        return args
+      })
+
+    config.when(isProduction, config => {
+      config.plugin('CompressionWebpackPlugin')
+        .use(CompressionWebpackPlugin, [{
+          algorithm: 'gzip',
+          test: new RegExp('\\.(css|js)$'),
+          threshold: 10240
+        }])
+    })
+
+    config.when(mode === 'st', config => {
+      config.plugin('FileManagerPlugin').use(FileManagerPlugin, [
+        {
+          events: {
+            onEnd: {
+              archive: [{
+                source: 'dist', destination: `.tmp/${name}-${buildTime.replace(/[-:\s]/g, '')}.zip`
+              }]
+            }
+          }
+        }
+      ])
     })
 
     config

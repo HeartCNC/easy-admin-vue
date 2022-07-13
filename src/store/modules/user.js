@@ -27,7 +27,7 @@ const actions = {
   logout({ commit, state }) {
     removeToken()
     commit('SET_USERINFO', null)
-    router.replace(`/login`)
+    router.replace('/login')
   }
 }
 
